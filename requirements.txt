@@ -1,3 +1,4 @@
 pytelegrambotapi
 exa_py
 tavily-python
+flask
