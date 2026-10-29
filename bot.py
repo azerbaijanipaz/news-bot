@@ -1,13 +1,25 @@
 # -*- coding: utf-8 -*-
 import os
+import threading
+from flask import Flask
 import telebot
 from exa_py import Exa
 from tavily import TavilyClient
 from datetime import datetime, timedelta
 
-# Вставьте сюда ваш токен от BotFather в кавычках:
-TELEGRAM_TOKEN = "9161073063:AAEqlqeBABRXJT-4M548DRYUq8qPDpygt4I"
+# Настройка веб-сервера для бесплатного Web Service на Render
+app = Flask(__name__)
 
+@app.route('/')
+def home():
+    return "Baku News Bot is running!"
+
+def run_web():
+    port = int(os.environ.get("PORT", 10000))
+    app.run(host="0.0.0.0", port=port)
+
+# Ваши токены (укажите ваш токен от BotFather)
+TELEGRAM_TOKEN = "9161073063:AAEqlqeBABRXJT-4M548DRYUq8qPDpygt4I"
 EXA_API_KEY = "2822e236-d7d2-41ab-ad8f-ff551bf0bf39"
 TAVILY_API_KEY = "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"
 
@@ -23,7 +35,7 @@ def send_welcome(message):
 def fetch_news(message):
     bot.send_message(message.chat.id, "🔍 Собираю свежие новости за последние 24 часа...")
     
-    # Строго 24 часа назад
+    # Строго последние 24 часа
     start_date = (datetime.utcnow() - timedelta(days=1)).strftime("%Y-%m-%dT%H:%M:%SZ")
     
     search_queries = [
@@ -85,4 +97,9 @@ def fetch_news(message):
     bot.send_message(message.chat.id, report, parse_mode="Markdown", disable_web_page_preview=True)
 
 if __name__ == '__main__':
+    # Запускаем веб-сервер в отдельном потоке для Render Web Service
+    t = threading.Thread(target=run_web)
+    t.start()
+    
+    # Запуск бота
     bot.infinity_polling()
